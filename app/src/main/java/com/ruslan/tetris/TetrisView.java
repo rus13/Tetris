@@ -137,4 +137,8 @@ public class TetrisView extends View {
             }
         }
     }
+
+    public int getWidthCells(){
+        return width;
+    }
 }
