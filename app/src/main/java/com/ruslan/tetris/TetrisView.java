@@ -15,8 +15,9 @@ import android.view.View;
  * TODO: document your custom view class.
  */
 public class TetrisView extends View {
-    private int mExampleColor = Color.RED; // TODO: use a default from R.color...
+    private int default_cell_size = 20;
     private Paint blank_paint;
+    private Paint stroke_paint;
 
     private int width;
     private int height;
@@ -53,8 +54,13 @@ public class TetrisView extends View {
         // Set up a default Paint object
         blank_paint = new Paint();
         blank_paint.setAntiAlias(true);
-        blank_paint.setColor(Color.GRAY);
-        blank_paint.setStyle(Paint.Style.FILL_AND_STROKE);
+        blank_paint.setColor(Color.LTGRAY);
+        blank_paint.setStyle(Paint.Style.FILL);
+        stroke_paint = new Paint();
+        stroke_paint.setAntiAlias(true);
+        stroke_paint.setColor(Color.WHITE);
+        stroke_paint.setStyle(Paint.Style.STROKE);
+        stroke_paint.setStrokeWidth(2.2F);
         // Setup the grid cells
         grid = new Paint[height][width];
         for (int y = 0; y < height; y++) {
@@ -72,7 +78,6 @@ public class TetrisView extends View {
         grid[x][y].setColor(color);
         invalidate();
     }
-
     //    public int getCell(int x, int y) {
 //        if (!(0 <= x && x < width))
 //            throw new IllegalArgumentException("getCell: x coordinate out of range");
@@ -95,11 +100,9 @@ public class TetrisView extends View {
         int widthMsSize = MeasureSpec.getSize(widthMeasureSpec);
         int heightMsMode = MeasureSpec.getMode(heightMeasureSpec);
         int heightMsSize = MeasureSpec.getSize(heightMeasureSpec);
-        int defaultSizeX = 32;
-        int defaultSizeY = 32;
         // Determine view width and height: either default size or passed size
-        int vw = (widthMsMode == MeasureSpec.UNSPECIFIED) ? width * defaultSizeX : widthMsSize;
-        int vh = (heightMsMode == MeasureSpec.UNSPECIFIED) ? height * defaultSizeY : heightMsSize;
+        int vw = (widthMsMode == MeasureSpec.UNSPECIFIED) ? width * default_cell_size : widthMsSize;
+        int vh = (heightMsMode == MeasureSpec.UNSPECIFIED) ? height * default_cell_size : heightMsSize;
         // Determine cell width and height
         double cw = vw / width;
         double ch = vh / height;
@@ -128,7 +131,9 @@ public class TetrisView extends View {
                 // Draw a rectangle
                 int dx = x * cell_size + offset_x;
                 int dy = y * cell_size + offset_y;
-                canvas.drawRect(new Rect(dx + 1, dy + 1, dx + cell_size - 2, dy + cell_size - 2), blank_paint);
+                Rect r = new Rect(dx + 1, dy + 1, dx + cell_size - 2, dy + cell_size - 2);
+                canvas.drawRect(r, grid[y][x]);
+                canvas.drawRect(r, stroke_paint);
             }
         }
     }
