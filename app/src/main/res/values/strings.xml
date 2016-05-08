@@ -1,0 +1,8 @@
+<resources>
+    <string name="hallo">Hallo Welt!</string>
+    <string name="app_name">Tetris</string>
+    <string name="button_left">Left</string>
+    <string name="button_right">Right</string>
+    <string name="button_down">Down</string>
+    <string name="button_rotate">Rotate</string>
+</resources>
