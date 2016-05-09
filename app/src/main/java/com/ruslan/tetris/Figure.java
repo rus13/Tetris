@@ -21,18 +21,30 @@ public class Figure {
 
     private int form;
     private int rotation;
+    private int color;
+
     private int width;
     private int height;
-    private int color;
+
+    private int posX;
+    private int posY;
 
     Figure(int f, int r, int c) {
         form = f;
         rotation = r;
         color = c;
-        setShape();
+        adjust();
     }
 
-    private void setShape() {
+    public static Figure randomFigure() {
+        Random rand = new Random();
+        int f = rand.nextInt(forms.length);
+        int r = rand.nextInt(forms[f].length);
+        int c = rand.nextInt(colors.length);
+        return new Figure(f, r, colors[c]);
+    }
+
+    private void adjust() {
         String[] l = forms[form][rotation].split("\n");
         width = l[0].length();
         height = l.length;
@@ -40,12 +52,25 @@ public class Figure {
 
     public void rotate() {
         rotation = (rotation + 1) % forms[form].length;
-        setShape();
+        adjust();
     }
 
     public void rotateBack() {
         rotation = (rotation - 1 + forms[form].length) % forms[form].length;
-        setShape();
+        adjust();
+    }
+
+    public void setPosition(int x, int y) {
+        posX = x;
+        posY = y;
+    }
+
+    public int getPosX() {
+        return posX;
+    }
+
+    public int getPosY() {
+        return posY;
     }
 
     public String getForm() {
@@ -60,13 +85,19 @@ public class Figure {
         return height;
     }
 
-    public int getColor() {return color;}
+    public int getColor() {
+        return color;
+    }
 
-    public static Figure randomFigure() {
-        Random rand = new Random();
-        int f = rand.nextInt(forms.length);
-        int r = rand.nextInt(forms[f].length);
-        int c = rand.nextInt(colors.length);
-        return new Figure(f, r, colors[c]);
+    public boolean occipiesPosition(int row, int column) {
+        String form = getForm();
+        String[] lines = form.split("\n");
+        for (int i = 0; i < lines.length; i++) {
+            for (int j = 0; j < lines[i].length(); j++) {
+                if (row == posY + i && column == posX + j && lines[i].charAt(j) == '*')
+                    return false;
+            }
+        }
+        return false;
     }
 }

@@ -4,71 +4,77 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 public class TetrisActivity extends AppCompatActivity{
-    static final int height = 20;
-    static final int width = 10;
+    private int default_figure_xpos = 4;
+    private int speed = 1000;
 
     TetrisView tetris_view;
-
-    private int speed = 10;
+    private int rows;
+    private int columns;
     private Block[][] grid;
 
-    private Figure cur_figure;
-    private int x,y;
+    private Figure fig;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         tetris_view = (TetrisView) findViewById(R.id.tetris_view);
         //tetris_view.setOnCellTouchListener(mNumGridView_OnCellTouchListener);
-        grid = new Block[height][width];
-        for(int i = 0; i < height; ++i){
-            for(int j = 0; j < width; ++j){
-                grid[i][j] = new Block();
-            }
-        }
-        cur_figure = Figure.randomFigure();
+        rows = tetris_view.getRows();
+        columns = tetris_view.getColumns();
+        grid = tetris_view.getGrid();
+        default_figure_xpos = columns / 2 - 1;
+        createNewFigure();
         try {
-            run();
+            play_game();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    public void run() throws InterruptedException {
+    public void play_game() throws InterruptedException {
         while(feasiblePlacement()){
             while(downPossible()){
-                Thread.sleep(1000);
+                Thread.sleep(speed);
                 down();
-                draw();
             }
-            Thread.sleep(1000);
+            Thread.sleep(speed);
             placeFigure();
             checkFullRows();
-            draw();
-            cur_figure = Figure.randomFigure();
+            createNewFigure();
         }
+        game_over();
     }
-    private void draw(){
+    private void game_over(){
 
+    }
+
+    private void createNewFigure(){
+        fig = Figure.randomFigure();
+        int fig_x = default_figure_xpos;
+        int fig_y = rows - fig.getHeight();
+        fig.setPosition(fig_x,fig_y);
+        tetris_view.setFigure(fig);
     }
 
     private boolean isFullRow(int row){
-        for(int i = 0; i < width; i++){
-            if(!grid[row][i].isOccupied())
+        for(int c = 0; c < columns; c++){
+            if(!grid[row][c].isOccupied())
                 return false;
         }
         return true;
     }
     private void deleteRow(int row){
-        for(int i = 0; i < width; i++)
-            grid[row][i].setOccupied(false);
+        for(int c = 0; c < columns; c++) {
+            tetris_view.freeBlock(row,c);
+        }
     }
     private void swapRows(int r1, int r2){
         Block tmp;
-        for(int i = 0; i < width; i++){
-            tmp = grid[r1][i];
-            grid[r2][i] = grid[r1][i];
-            grid[r1][i] = tmp;
+        for(int c = 0; c < columns; c++){
+            tmp = grid[r2][c];
+            grid[r2][c] = grid[r1][c];
+            grid[r1][c] = tmp;
         }
     }
     private void checkFullRows(){
@@ -79,70 +85,75 @@ public class TetrisActivity extends AppCompatActivity{
                 if(empty_row == -1)
                     empty_row = r;
             }
-            else{
-                if(empty_row >= 0){
-                    swapRows(r, empty_row);
-                    deleteRow(r);
-                    empty_row++;
-                }
+            else if (empty_row >= 0) {
+                swapRows(r, empty_row);
+                //deleteRow(r);
+                empty_row++;
             }
         }
     }
     private void placeFigure(){
+        int fig_y = fig.getPosY();
+        int fig_x = fig.getPosX();
         if(feasiblePlacement()){
-            String form = cur_figure.getForm();
-            String[] lines = form.split("\n");
-            for(int i = 0; i < lines.length; i++){
-                for(int j = 0; j < lines[i].length(); j++){
-                    if(lines[i].charAt(j) == '*')
-                        grid[x+i][y+j].setOccupied(true);
+            for(int r = fig_y; r < fig_y + fig.getHeight(); r++){
+                for(int c = fig_x; c < fig_x + fig.getWidth(); c++){
+                    if(fig.occipiesPosition(r,c)){
+                        tetris_view.setBlock(r,c, fig.getColor());
+                    }
                 }
             }
         }
     }
     private boolean feasiblePlacement(){
+        int fig_y = fig.getPosY();
+        int fig_x = fig.getPosX();
         //out of bounds
-        if((x + cur_figure.getWidth() > width) || (y + cur_figure.getHeight() > height))
+        if((fig_x + fig.getWidth() > columns) || (fig_y + fig.getHeight() > rows))
             return false;
         //overlapping with some block
-        String form = cur_figure.getForm();
-        String[] lines = form.split("\n");
-        for(int i = 0; i < lines.length; i++){
-            for(int j = 0; j < lines[i].length(); j++){
-                if(lines[i].charAt(j) == '*' && grid[x+i][y+j].isOccupied())
+        for(int r = fig_y; r < fig_y + fig.getHeight(); r++){
+            for(int c = fig_x; c < fig_x + fig.getWidth(); c++){
+                if(fig.occipiesPosition(r,c) && grid[r][c].isOccupied())
+                    return false;
+            }
+        }
+        return true;
+    }
+    private boolean downPossible(){
+        int fig_y = fig.getPosY();
+        int fig_x = fig.getPosX();
+        //check if figure is already on the ground
+        if(fig_y == 0)
+            return false;
+        //check if beneath the figure there is some occupied block
+        for(int r = fig_y; r < fig_y + fig.getHeight(); r++){
+            for(int c = fig_x; c < fig_x + fig.getWidth(); c++){
+                if(fig.occipiesPosition(r,c) && grid[r-1][c].isOccupied())
                     return false;
             }
         }
         return true;
     }
     public void rotateFigure(){
-        cur_figure.rotate();
+        fig.rotate();
         if(!feasiblePlacement())
-            cur_figure.rotateBack();
+            fig.rotateBack();
     }
     public void left(){
-        if(x > 0)
-            x--;
+        int fig_x = fig.getPosX();
+        if( fig_x > 0)
+            fig.setPosition(fig_x, fig.getPosY());
     }
     public void right(){
-        if(x + cur_figure.getWidth() < width)
-            x++;
+        int fig_x = fig.getPosX();
+        if(fig_x + fig.getWidth() < columns)
+            fig.setPosition(fig_x+1, fig.getPosY());
     }
     public void down(){
-        if(y > 0 && downPossible()){
-            y--;
+        int fig_y = fig.getPosY();
+        if(fig_y > 0 && downPossible()){
+            fig.setPosition(fig.getPosX(), fig_y - 1);
         }
-    }
-    private boolean downPossible(){
-        if(y == 0)//ground
-            return false;
-        //check if beneath the figure there is some occupied block
-        String form = cur_figure.getForm();
-        String[] lines = form.split("\n");
-        for(int i = 0; i < cur_figure.getWidth(); i++){
-            if(lines[0].charAt(i) == '*' && grid[i][y - 1].isOccupied())
-                return false;
-        }
-        return true;
     }
 }

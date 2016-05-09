@@ -12,6 +12,12 @@ public class Block {
     public boolean isOccupied(){
         return occupied;
     }
+    public void setColor(int c){
+        color = c;
+    }
+    public int getColor(){
+        return color;
+    }
     public void setOccupied(boolean occ){
         occupied = occ;
     }
