@@ -50,29 +50,31 @@ public class Figure {
         height = l.length;
     }
 
-    public void rotate() {
-        rotation = (rotation + 1) % forms[form].length;
-        adjust();
-    }
-
-    public void rotateBack() {
-        rotation = (rotation - 1 + forms[form].length) % forms[form].length;
-        adjust();
-    }
-
     public void setPosition(int x, int y) {
         posX = x;
         posY = y;
     }
 
-    public int getPosX() {
-        return posX;
+    public void rotate() {
+        rotation = (rotation - 1 + forms[form].length) % forms[form].length;
+        adjust();
     }
-
-    public int getPosY() {
-        return posY;
+    public void rotateBack() {
+        rotation = (rotation + 1) % forms[form].length;
+        adjust();
     }
-
+    public void moveLeft(){
+        posX--;
+    }
+    public void moveRight(){
+        posX++;
+    }
+    public void moveDown(){
+        posY--;
+    }
+    public void moveUp(){
+        posY++;
+    }
     public String getForm() {
         return forms[form][rotation];
     }
@@ -88,16 +90,18 @@ public class Figure {
     public int getColor() {
         return color;
     }
-
+    public int getPosX() {
+        return posX;
+    }
+    public int getPosY() {
+        return posY;
+    }
     public boolean occipiesPosition(int row, int column) {
         String form = getForm();
         String[] lines = form.split("\n");
-        for (int i = 0; i < lines.length; i++) {
-            for (int j = 0; j < lines[i].length(); j++) {
-                if (row == posY + i && column == posX + j && lines[i].charAt(j) == '*')
-                    return false;
-            }
-        }
-        return false;
+        if (row >= posY && row < posY + height && column >= posX && column < posX + width && lines[row - posY].charAt(column - posX) == '*')
+            return true;
+        else
+            return false;
     }
 }

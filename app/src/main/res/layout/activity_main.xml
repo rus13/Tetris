@@ -12,24 +12,25 @@
 
     <LinearLayout
         android:id="@+id/grid"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:orientation="horizontal">
         <com.ruslan.tetris.TetrisView
             android:id="@+id/tetris_view"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:paddingBottom="40dp"
+            android:background="@drawable/border"
             tetris:blocksX="10"
             tetris:blocksY="20" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/hallo">
+            android:layout_weight="2"
+            android:text="@string/status">
         </TextView>
     </LinearLayout>
 
@@ -37,25 +38,30 @@
         android:id="@+id/buttons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:minHeight="80dp"
         android:layout_alignParentBottom="true"
         android:gravity="bottom">
 
         <Button
+            android:id="@+id/button_left"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/button_left" />
 
         <Button
+            android:id="@+id/button_right"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/button_right" />
 
         <Button
+            android:id="@+id/button_down"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/button_down" />
 
         <Button
+            android:id="@+id/button_rotate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/button_rotate" />

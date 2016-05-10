@@ -71,6 +71,12 @@ public class TetrisView extends View {
                 freeBlock(r,c);
             }
         }
+        fig = Figure.randomFigure();
+    }
+
+    public void draw(){
+        postInvalidate();
+        invalidate();
     }
 
     public void setBlock(int r, int c, int color) {
@@ -130,7 +136,7 @@ public class TetrisView extends View {
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < columns; c++) {
                 int dx = c * cell_size + offset_x;
-                int dy = r * cell_size + offset_y;
+                int dy = (rows - r - 1)* cell_size + offset_y;
                 Rect rect = new Rect(dx + 1, dy + 1, dx + cell_size - 2, dy + cell_size - 2);
                 if(fig.occipiesPosition(r,c))
                     fill_paint.setColor(fig.getColor());
