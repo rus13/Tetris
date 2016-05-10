@@ -74,11 +74,6 @@ public class TetrisView extends View {
         fig = Figure.randomFigure();
     }
 
-    public void draw(){
-        postInvalidate();
-        invalidate();
-    }
-
     public void setBlock(int r, int c, int color) {
         if (!(0 <= c&& c < columns))
             throw new IllegalArgumentException("setCell: x coordinate out of range");
@@ -86,7 +81,6 @@ public class TetrisView extends View {
             throw new IllegalArgumentException("setCell: y coordinate out of range");
         grid[r][c].setColor(color);
         grid[r][c].setOccupied(true);
-        invalidate();
     }
 
     public void freeBlock(int r, int c) {
@@ -96,7 +90,6 @@ public class TetrisView extends View {
             throw new IllegalArgumentException("setCell: y coordinate out of range");
         grid[r][c].setOccupied(false);
         grid[r][c].setColor(blank_color);
-        invalidate();
     }
 
     @Override

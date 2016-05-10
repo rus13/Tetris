@@ -2,12 +2,15 @@ package com.ruslan.tetris;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 
 public class TetrisActivity extends AppCompatActivity{
     private int default_figure_xpos = 4;
-    private int speed = 1000;
+    private final int min_speed = 70;
+    private int default_speed = 700;
+    private int current_speed = 700;
 
     TetrisView tetris_view;
     private int rows;
@@ -18,24 +21,34 @@ public class TetrisActivity extends AppCompatActivity{
 
     private void setUpButtonListener(){
         Button button = (Button) findViewById(R.id.button_left);
+        assert button != null;
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 left();
             }
         });
         button = (Button) findViewById(R.id.button_right);
+        assert button != null;
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 right();
             }
         });
         button = (Button) findViewById(R.id.button_down);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                down();
+        assert button != null;
+        button.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    current_speed = min_speed;
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    current_speed = default_speed;
+                }
+                return true;
             }
         });
         button = (Button) findViewById(R.id.button_rotate);
+        assert button != null;
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 rotateFigure();
@@ -55,31 +68,41 @@ public class TetrisActivity extends AppCompatActivity{
         createNewFigure();
         //Create Button listener
         setUpButtonListener();
+        // Use a new thread
+        Thread thread = new Thread(new Runnable(){
+            @Override
+            public void run(){
+                try {
+                    play_game();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
     }
 
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        /*try {
-            play_game();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
+    private void draw(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                tetris_view.invalidate();
+            }
+        });
     }
 
     public void play_game() throws InterruptedException {
         while(feasiblePlacement()){
             while(downPossible()){
-                Thread.sleep(speed);
+                Thread.sleep(current_speed);
                 down();
-                tetris_view.draw();
+                draw();
             }
-            Thread.sleep(speed);
+            Thread.sleep(current_speed);
             placeFigure();
             checkFullRows();
             createNewFigure();
-            tetris_view.draw();
+            draw();
         }
         game_over();
     }
@@ -172,7 +195,7 @@ public class TetrisActivity extends AppCompatActivity{
         fig.rotate();
         if(!feasiblePlacement())
             fig.rotateBack();
-        tetris_view.invalidate();
+        draw();
     }
     public void left(){
         if( fig.getPosX() > 0){
@@ -180,7 +203,7 @@ public class TetrisActivity extends AppCompatActivity{
             if(!feasiblePlacement())
                 fig.moveRight();
         }
-        tetris_view.invalidate();
+        draw();
     }
     public void right(){
         if( fig.getPosX() < columns - 1){
@@ -188,12 +211,12 @@ public class TetrisActivity extends AppCompatActivity{
             if(!feasiblePlacement())
                 fig.moveLeft();
         }
-        tetris_view.invalidate();
+        draw();
     }
     public void down(){
         if(downPossible()){
             fig.moveDown();
         }
-        tetris_view.invalidate();
+        draw();
     }
 }
