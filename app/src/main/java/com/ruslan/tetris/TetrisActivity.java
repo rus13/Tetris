@@ -5,18 +5,23 @@ import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class TetrisActivity extends AppCompatActivity{
-    private int default_figure_xpos = 4;
     private final int min_speed = 70;
-    private int default_speed = 700;
+    private final int default_speed = 700;
     private int current_speed = 700;
+    private int score = 0;
+
+    enum State{RUNNING, PLACE_FIGURE};
+    State state;
+    private final Object lock = new Object();
 
     TetrisView tetris_view;
+    Thread game_thread;
     private int rows;
     private int columns;
     private Block[][] grid;
-
     private Figure fig;
 
     private void setUpButtonListener(){
@@ -24,14 +29,20 @@ public class TetrisActivity extends AppCompatActivity{
         assert button != null;
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                left();
+                synchronized (lock) {
+                    if (state == State.RUNNING)
+                        moveFigureLeft();
+                }
             }
         });
         button = (Button) findViewById(R.id.button_right);
         assert button != null;
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                right();
+                synchronized (lock) {
+                    if (state == State.RUNNING)
+                        moveFigureRight();
+                }
             }
         });
         button = (Button) findViewById(R.id.button_down);
@@ -41,6 +52,9 @@ public class TetrisActivity extends AppCompatActivity{
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
                     current_speed = min_speed;
+                    synchronized (lock){
+                        lock.notify();
+                    }
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     current_speed = default_speed;
                 }
@@ -51,7 +65,10 @@ public class TetrisActivity extends AppCompatActivity{
         assert button != null;
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                rotateFigure();
+                synchronized (lock) {
+                    if (state == State.RUNNING)
+                        rotateFigure();
+                }
             }
         });
     }
@@ -64,23 +81,44 @@ public class TetrisActivity extends AppCompatActivity{
         rows = tetris_view.getRows();
         columns = tetris_view.getColumns();
         grid = tetris_view.getGrid();
-        default_figure_xpos = columns / 2 - 1;
         createNewFigure();
         //Create Button listener
         setUpButtonListener();
         // Use a new thread
-        Thread thread = new Thread(new Runnable(){
-            @Override
-            public void run(){
-                try {
-                    play_game();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+        if(game_thread == null) {
+            game_thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        play_game();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
-        thread.start();
+            });
+            game_thread.start();
+        }
     }
+
+/*    @Override
+    protected void onPause() {
+        super.onPause();
+        try {
+            synchronized (game_thread) {
+                game_thread.wait();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        synchronized (game_thread) {
+            game_thread.notify();
+        }
+    }*/
 
     private void draw(){
         runOnUiThread(new Runnable() {
@@ -91,31 +129,53 @@ public class TetrisActivity extends AppCompatActivity{
         });
     }
 
+
     public void play_game() throws InterruptedException {
         while(feasiblePlacement()){
-            while(downPossible()){
-                Thread.sleep(current_speed);
-                down();
-                draw();
+           // pause();
+            state = State.RUNNING;
+            while(state == State.RUNNING){
+                pause();
+                synchronized (lock){
+                    if(!moveFigureDown())
+                        state = State.PLACE_FIGURE;
+                }
             }
-            Thread.sleep(current_speed);
-            placeFigure();
-            checkFullRows();
-            createNewFigure();
-            draw();
+            update();
         }
         game_over();
     }
     private void game_over(){
 
     }
-
+    private void pause() throws InterruptedException {
+        synchronized (lock){
+            lock.wait(current_speed);
+        }
+    }
+    private void update(){
+        placeFigure();
+        checkFullRows();
+        createNewFigure();
+        updateScore();
+    }
+    private void updateScore(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                TextView view = (TextView) findViewById(R.id.score_num);
+                view.setText(Integer.toString(score));
+                tetris_view.invalidate();
+            }
+        });
+    }
     private void createNewFigure(){
         fig = Figure.randomFigure();
-        int fig_x = default_figure_xpos;
+        int fig_x = columns / 2 - 1;
         int fig_y = rows - fig.getHeight();
         fig.setPosition(fig_x,fig_y);
         tetris_view.setFigure(fig);
+        draw();
     }
 
     private boolean isFullRow(int row){
@@ -145,10 +205,10 @@ public class TetrisActivity extends AppCompatActivity{
                 deleteRow(r);
                 if(empty_row == -1)
                     empty_row = r;
+                score++;
             }
             else if (empty_row >= 0) {
                 swapRows(r, empty_row);
-                //deleteRow(r);
                 empty_row++;
             }
         }
@@ -166,6 +226,9 @@ public class TetrisActivity extends AppCompatActivity{
             }
         }
     }
+    /*
+    * The method checks whether the
+    * */
     private boolean feasiblePlacement(){
         int fig_y = fig.getPosY();
         int fig_x = fig.getPosX();
@@ -181,23 +244,17 @@ public class TetrisActivity extends AppCompatActivity{
         }
         return true;
     }
-    private boolean downPossible(){
-        int fig_y = fig.getPosY();
-        //check if figure is already on the ground
-        if(fig_y <= 0)
-            return false;
-        fig.moveDown();
-        boolean feasible = feasiblePlacement();
-        fig.moveUp();
-        return feasible;
-    }
+    /*
+    * Methods for changing the position or the rotation shape of the figure
+    * The changes are done only if its a feasible change, i.e. no overlapping with blocks
+    * */
     public void rotateFigure(){
         fig.rotate();
         if(!feasiblePlacement())
             fig.rotateBack();
         draw();
     }
-    public void left(){
+    public void moveFigureLeft(){
         if( fig.getPosX() > 0){
             fig.moveLeft();
             if(!feasiblePlacement())
@@ -205,7 +262,7 @@ public class TetrisActivity extends AppCompatActivity{
         }
         draw();
     }
-    public void right(){
+    public void moveFigureRight(){
         if( fig.getPosX() < columns - 1){
             fig.moveRight();
             if(!feasiblePlacement())
@@ -213,10 +270,23 @@ public class TetrisActivity extends AppCompatActivity{
         }
         draw();
     }
-    public void down(){
-        if(downPossible()){
-            fig.moveDown();
-        }
+    /*private boolean downPossible(){
+        //check if figure is already on the ground
+        if(fig.getPosY() <= 0)
+            return false;
+        fig.moveDown();
+        boolean feasible = feasiblePlacement();
+        fig.moveUp();
+        return feasible;
+    }*/
+    public boolean moveFigureDown(){
+        if(fig.getPosY() <= 0)
+            return false;
+        fig.moveDown();
+        boolean feasible = feasiblePlacement();
+        if(!feasible)
+            fig.moveUp();
         draw();
+        return feasible;
     }
 }
