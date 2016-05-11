@@ -7,15 +7,15 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 
 /**
  * TODO: document your custom view class.
  */
 public class TetrisView extends View {
-    private static final int default_cell_size = 20;
-    public static final int blank_color = Color.LTGRAY;
-    public static final int stroke_color = Color.WHITE;
+    private int default_cell_size ;
+    private int blank_color;
 
     private Paint fill_paint;
     private Paint stroke_paint;
@@ -34,12 +34,10 @@ public class TetrisView extends View {
         super(context);
         init(null, 0);
     }
-
     public TetrisView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(attrs, 0);
     }
-
     public TetrisView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(attrs, defStyle);
@@ -47,11 +45,16 @@ public class TetrisView extends View {
 
     private void init(AttributeSet attrs, int defStyle) {
         // Load attributes
-        final TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.TetrisView, defStyle, 0);
+        Context cont = getContext();
+        final TypedArray a = cont.obtainStyledAttributes(attrs, R.styleable.TetrisView, defStyle, 0);
         columns = a.getInt(R.styleable.TetrisView_blocksX, 10);
         rows = a.getInt(R.styleable.TetrisView_blocksY, 20);
         a.recycle();
-
+        // Set up colors and default values
+        default_cell_size = cont.getResources().getInteger(R.integer.default_cell_size);
+        blank_color = cont.getResources().getInteger(R.integer.blank_color);
+        int stroke_color = cont.getResources().getInteger(R.integer.stroke_color);
+        int stroke_width = cont.getResources().getInteger(R.integer.stroke_width);
         // Set up a default fill Paint
         fill_paint = new Paint();
         fill_paint.setAntiAlias(true);
@@ -62,7 +65,7 @@ public class TetrisView extends View {
         stroke_paint.setAntiAlias(true);
         stroke_paint.setColor(stroke_color);
         stroke_paint.setStyle(Paint.Style.STROKE);
-        stroke_paint.setStrokeWidth(2.2F);
+        stroke_paint.setStrokeWidth(stroke_width);
         // Setup the grid cells
         grid = new Block[rows][columns];
         for (int r = 0; r < rows; r++) {
@@ -71,27 +74,23 @@ public class TetrisView extends View {
                 freeBlock(r,c);
             }
         }
-        fig = Figure.randomFigure();
     }
-
     public void setBlock(int r, int c, int color) {
         if (!(0 <= c&& c < columns))
-            throw new IllegalArgumentException("setCell: x coordinate out of range");
+            throw new IllegalArgumentException("setBlock: x coordinate out of range");
         if (!(0 <= r && r < rows))
-            throw new IllegalArgumentException("setCell: y coordinate out of range");
+            throw new IllegalArgumentException("setBlock: y coordinate out of range");
         grid[r][c].setColor(color);
         grid[r][c].setOccupied(true);
     }
-
     public void freeBlock(int r, int c) {
         if (!(0 <= c && c < columns))
-            throw new IllegalArgumentException("setCell: x coordinate out of range");
+            throw new IllegalArgumentException("setBlock: x coordinate out of range");
         if (!(0 <= r && r < rows))
-            throw new IllegalArgumentException("setCell: y coordinate out of range");
+            throw new IllegalArgumentException("setBlock: y coordinate out of range");
         grid[r][c].setOccupied(false);
         grid[r][c].setColor(blank_color);
     }
-
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int widthMsMode = MeasureSpec.getMode(widthMeasureSpec);
@@ -112,19 +111,9 @@ public class TetrisView extends View {
         // Satisfy contract by calling setMeasuredDimension
         setMeasuredDimension(2 * offset_x + columns * cell_size, 2 * offset_y + rows * cell_size);
     }
-
-
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        int paddingLeft = getPaddingLeft();
-        int paddingTop = getPaddingTop();
-        int paddingRight = getPaddingRight();
-        int paddingBottom = getPaddingBottom();
-
-        int contentWidth = getWidth() - paddingLeft - paddingRight;
-        int contentHeight = getHeight() - paddingTop - paddingBottom;
-
         // draw grid && figure
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < columns; c++) {

@@ -2,4 +2,22 @@
 <resources>
     <integer name="blocksX">10</integer>
     <integer name="blocksY">20</integer>
+    <integer name="default_cell_size">20</integer>
+    <integer name="blank_color">0xFFCCCCCC</integer>
+    <integer name="stroke_color">0xFFFFFFFF</integer>
+    <integer name="stroke_width">3</integer>
 </resources>
+
+    <!--
+        @ColorInt public static final int BLACK       = 0xFF000000;
+        @ColorInt public static final int DKGRAY      = 0xFF444444;
+        @ColorInt public static final int GRAY        = 0xFF888888;
+        @ColorInt public static final int LTGRAY      = 0xFFCCCCCC;
+        @ColorInt public static final int WHITE       = 0xFFFFFFFF;
+        @ColorInt public static final int RED         = 0xFFFF0000;
+        @ColorInt public static final int GREEN       = 0xFF00FF00;
+        @ColorInt public static final int BLUE        = 0xFF0000FF;
+        @ColorInt public static final int YELLOW      = 0xFFFFFF00;
+        @ColorInt public static final int CYAN        = 0xFF00FFFF;
+        @ColorInt public static final int MAGENTA     = 0xFFFF00FF;
+        @ColorInt public static final int TRANSPARENT = 0;-->
