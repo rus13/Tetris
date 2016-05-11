@@ -13,17 +13,18 @@ public class TetrisActivity extends AppCompatActivity{
     private int current_speed = 700;
     private int score = 0;
 
+    // State and the lock object are needed make the game thread safe (feasible user and game actions)
     enum State{RUNNING, PLACE_FIGURE};
     State state;
     private final Object lock = new Object();
 
-    TetrisView tetris_view;
     Thread game_thread;
     private int rows;
     private int columns;
     private Block[][] grid;
     private Figure fig;
 
+    // Initialize the button listener, also use lock object to synchronize the action of the game and the user
     private void setUpButtonListener(){
         Button button = (Button) findViewById(R.id.button_left);
         assert button != null;
@@ -72,12 +73,11 @@ public class TetrisActivity extends AppCompatActivity{
             }
         });
     }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        tetris_view = (TetrisView) findViewById(R.id.tetris_view);
+        TetrisView tetris_view = (TetrisView) findViewById(R.id.tetris_view);
         rows = tetris_view.getRows();
         columns = tetris_view.getColumns();
         grid = tetris_view.getGrid();
@@ -100,35 +100,14 @@ public class TetrisActivity extends AppCompatActivity{
         }
     }
 
-/*    @Override
-    protected void onPause() {
-        super.onPause();
-        try {
-            synchronized (game_thread) {
-                game_thread.wait();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        synchronized (game_thread) {
-            game_thread.notify();
-        }
-    }*/
-
     private void draw(){
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                tetris_view.invalidate();
+                findViewById(R.id.tetris_view).invalidate();
             }
         });
     }
-
 
     public void play_game() throws InterruptedException {
         while(feasiblePlacement()){
@@ -148,6 +127,7 @@ public class TetrisActivity extends AppCompatActivity{
     private void game_over(){
 
     }
+    // A pause after the figure is moved down one block
     private void pause() throws InterruptedException {
         synchronized (lock){
             lock.wait(current_speed);
@@ -165,19 +145,20 @@ public class TetrisActivity extends AppCompatActivity{
             public void run() {
                 TextView view = (TextView) findViewById(R.id.score_num);
                 view.setText(Integer.toString(score));
-                tetris_view.invalidate();
+                draw();
             }
         });
     }
+    // After the current figure is placed on the grid, a new figure is created
     private void createNewFigure(){
         fig = Figure.randomFigure();
         int fig_x = columns / 2 - 1;
         int fig_y = rows - fig.getHeight();
         fig.setPosition(fig_x,fig_y);
-        tetris_view.setFigure(fig);
+        TetrisView view = (TetrisView) findViewById(R.id.tetris_view);
+        view.setFigure(fig);
         draw();
     }
-
     private boolean isFullRow(int row){
         for(int c = 0; c < columns; c++){
             if(!grid[row][c].isOccupied())
@@ -187,7 +168,8 @@ public class TetrisActivity extends AppCompatActivity{
     }
     private void deleteRow(int row){
         for(int c = 0; c < columns; c++) {
-            tetris_view.freeBlock(row,c);
+            TetrisView view = (TetrisView) findViewById(R.id.tetris_view);
+            view.freeBlock(row,c);
         }
     }
     private void swapRows(int r1, int r2){
@@ -220,14 +202,15 @@ public class TetrisActivity extends AppCompatActivity{
             for(int r = fig_y; r < fig_y + fig.getHeight(); r++){
                 for(int c = fig_x; c < fig_x + fig.getWidth(); c++){
                     if(fig.occipiesPosition(r,c)){
-                        tetris_view.setBlock(r,c, fig.getColor());
+                        TetrisView view = (TetrisView) findViewById(R.id.tetris_view);
+                        view.setBlock(r,c, fig.getColor());
                     }
                 }
             }
         }
     }
     /*
-    * The method checks whether the
+    * The method checks whether the position of the current figure is feasible, i.e. no overlapping with full Blocks
     * */
     private boolean feasiblePlacement(){
         int fig_y = fig.getPosY();

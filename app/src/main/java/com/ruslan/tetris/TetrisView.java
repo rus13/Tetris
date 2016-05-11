@@ -11,7 +11,7 @@ import android.util.TypedValue;
 import android.view.View;
 
 /**
- * TODO: document your custom view class.
+ *
  */
 public class TetrisView extends View {
     private int default_cell_size ;
