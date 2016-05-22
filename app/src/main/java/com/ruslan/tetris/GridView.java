@@ -3,42 +3,38 @@ package com.ruslan.tetris;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.View;
 
 /**
  *
  */
-public class TetrisView extends View {
-    private int default_cell_size ;
+public class GridView extends View {
+    private int default_cell_size;
     private int blank_color;
 
     private Paint fill_paint;
     private Paint stroke_paint;
 
-    private int columns;
-    private int rows;
-
     private int cell_size;
     private int offset_x;
     private int offset_y;
 
-    private Block[][] grid;
-    private Figure fig;
+    private TetrisModel model;
+    int rows;
+    int columns;
 
-    public TetrisView(Context context) {
+    public GridView(Context context) {
         super(context);
         init(null, 0);
     }
-    public TetrisView(Context context, AttributeSet attrs) {
+    public GridView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(attrs, 0);
     }
-    public TetrisView(Context context, AttributeSet attrs, int defStyle) {
+    public GridView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(attrs, defStyle);
     }
@@ -46,10 +42,8 @@ public class TetrisView extends View {
     private void init(AttributeSet attrs, int defStyle) {
         // Load attributes
         Context cont = getContext();
-        final TypedArray a = cont.obtainStyledAttributes(attrs, R.styleable.TetrisView, defStyle, 0);
-        columns = a.getInt(R.styleable.TetrisView_blocksX, 10);
-        rows = a.getInt(R.styleable.TetrisView_blocksY, 20);
-        a.recycle();
+        rows = cont.getResources().getInteger(R.integer.blocksY);
+        columns = cont.getResources().getInteger(R.integer.blocksX);
         // Set up colors and default values
         default_cell_size = cont.getResources().getInteger(R.integer.default_cell_size);
         blank_color = cont.getResources().getInteger(R.integer.blank_color);
@@ -66,38 +60,15 @@ public class TetrisView extends View {
         stroke_paint.setColor(stroke_color);
         stroke_paint.setStyle(Paint.Style.STROKE);
         stroke_paint.setStrokeWidth(stroke_width);
-        // Setup the grid cells
-        grid = new Block[rows][columns];
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < columns; c++) {
-                grid[r][c] = new Block();
-                freeBlock(r,c);
-            }
-        }
-    }
-    public void setBlock(int r, int c, int color) {
-        if (!(0 <= c&& c < columns))
-            throw new IllegalArgumentException("setBlock: x coordinate out of range");
-        if (!(0 <= r && r < rows))
-            throw new IllegalArgumentException("setBlock: y coordinate out of range");
-        grid[r][c].setColor(color);
-        grid[r][c].setOccupied(true);
-    }
-    public void freeBlock(int r, int c) {
-        if (!(0 <= c && c < columns))
-            throw new IllegalArgumentException("setBlock: x coordinate out of range");
-        if (!(0 <= r && r < rows))
-            throw new IllegalArgumentException("setBlock: y coordinate out of range");
-        grid[r][c].setOccupied(false);
-        grid[r][c].setColor(blank_color);
     }
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec,heightMeasureSpec);
         int widthMsMode = MeasureSpec.getMode(widthMeasureSpec);
         int widthMsSize = MeasureSpec.getSize(widthMeasureSpec);
         int heightMsMode = MeasureSpec.getMode(heightMeasureSpec);
         int heightMsSize = MeasureSpec.getSize(heightMeasureSpec);
-        // Determine view columns and rows: either default size or passed size
+        // Determine controller columns and rows: either default size or passed size
         int vw = (widthMsMode == MeasureSpec.UNSPECIFIED) ? columns * default_cell_size : widthMsSize;
         int vh = (heightMsMode == MeasureSpec.UNSPECIFIED) ? rows * default_cell_size : heightMsSize;
         // Determine cell columns and rows
@@ -120,25 +91,19 @@ public class TetrisView extends View {
                 int dx = c * cell_size + offset_x;
                 int dy = (rows - r - 1)* cell_size + offset_y;
                 Rect rect = new Rect(dx + 1, dy + 1, dx + cell_size - 2, dy + cell_size - 2);
-                if(fig.occipiesPosition(r,c))
-                    fill_paint.setColor(fig.getColor());
+                if(model.isOccupiedAt(r,c))
+                    fill_paint.setColor(model.colorAt(r,c));
                 else
-                    fill_paint.setColor(grid[r][c].getColor());
+                    fill_paint.setColor(blank_color);
                 canvas.drawRect(rect, fill_paint);
                 canvas.drawRect(rect, stroke_paint);
             }
         }
     }
-    public void setFigure(Figure f){
-        fig = f;
+    public void setModel(TetrisModel m){
+        model = m;
     }
-    public int getColumns(){
-        return columns;
-    }
-    public int getRows(){
-        return rows;
-    }
-    public Block[][] getGrid() {
-        return grid;
+    public int getCellSize(){
+        return cell_size;
     }
 }

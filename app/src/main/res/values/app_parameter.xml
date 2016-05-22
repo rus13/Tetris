@@ -6,6 +6,7 @@
     <integer name="blank_color">0xFFCCCCCC</integer>
     <integer name="stroke_color">0xFFFFFFFF</integer>
     <integer name="stroke_width">3</integer>
+
 </resources>
 
     <!--

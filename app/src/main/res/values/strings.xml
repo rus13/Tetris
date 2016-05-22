@@ -5,6 +5,10 @@
     <string name="button_right">Right</string>
     <string name="button_down">Down</string>
     <string name="button_rotate">Rotate</string>
+    <string name="button_pause">Pause</string>
+    <string name="button_resume">Resume</string>
     <string name="level">Level</string>
     <string name="score">Score: </string>
+    <string name="next_figure">Next Figure: </string>
+    <string name="zero"> 0 </string>
 </resources>

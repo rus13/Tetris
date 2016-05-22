@@ -82,10 +82,13 @@ public class Figure {
     public boolean occipiesPosition(int row, int column) {
         String f = forms[form][rotation];
         String[] lines = f.split("\n");
-        if (row >= posY && row < posY + height && column >= posX && column < posX + width && lines[row - posY].charAt(column - posX) == '*')
-            return true;
-        else
-            return false;
+        return row >= posY && row < posY + height && column >= posX && column < posX + width && lines[row - posY].charAt(column - posX) == '*';
+    }
+
+    public boolean occipiesLocalPosition(int row, int column) {
+        String f = forms[form][rotation];
+        String[] lines = f.split("\n");
+        return row >= 0 && row < lines.length && column >= 0 && column < lines[row].length() && lines[row].charAt(column) == '*';
     }
     public static Figure randomFigure() {
         Random rand = new Random();

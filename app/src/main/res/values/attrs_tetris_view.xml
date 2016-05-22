@@ -1,5 +1,5 @@
 <resources>
-    <declare-styleable name="TetrisView">
+    <declare-styleable name="GridView">
         <attr name="blocksY" format="integer" min="1"/>
         <attr name="blocksX" format="integer" min="1"/>
     </declare-styleable>
