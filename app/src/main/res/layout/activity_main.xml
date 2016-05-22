@@ -19,13 +19,26 @@
         android:orientation="horizontal"
         android:paddingBottom="20dp">
 
-        <com.ruslan.tetris.GridView
-            android:id="@+id/tetris_view"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1.5"
-            tetris:blocksX="@integer/blocksX"
-            tetris:blocksY="@integer/blocksY" />
+            android:layout_weight="1.5">
+            <com.ruslan.tetris.GridView
+                android:id="@+id/tetris_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tetris:blocksX="@integer/blocksX"
+                tetris:blocksY="@integer/blocksY" />
+            <TextView
+                android:id="@+id/game_over"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="casual"
+                android:text=""
+                android:textSize="45sp"
+                android:textStyle="bold"
+                android:layout_marginTop="50dp"/>
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -71,7 +84,7 @@
             <com.ruslan.tetris.NextFigureView
                 android:id="@+id/next_figure"
                 android:layout_width="match_parent"
-                android:layout_height="100dp" />
+                android:layout_height="120dp" />
 
             <ImageButton
                 android:id="@+id/button_pause"
@@ -79,6 +92,7 @@
                 android:layout_height="wrap_content"
                 android:minHeight="40dp"
                 android:minWidth="40dp"
+                android:layout_gravity="center"
                 android:src="@drawable/pause" />
         </LinearLayout>
     </LinearLayout>

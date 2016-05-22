@@ -161,16 +161,9 @@ public class TetrisModel {
         else
             return grid[r][c].getColor();
     }
-/*    public int getRows(){
-        return rows;
-    }
-    public int getColumns(){
-        return columns;
-    }*/
     public int getScore(){
         return score;
     }
-
     public int getNextFigureColor(){
         return next_fig.getColor();
     }

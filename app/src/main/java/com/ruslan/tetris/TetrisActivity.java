@@ -3,6 +3,9 @@ import android.media.Image;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -34,18 +37,36 @@ public class TetrisActivity extends AppCompatActivity {
         setUpButtonListener();
         controller.start();
     }
-
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.new_game:
+                newGame();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+    private void newGame(){
+        this.recreate();
+    }
     @Override
     protected void onPause(){
         super.onPause();
         controller.processEvent(TetrisController.InputEvent.PAUSE);
     }
-
+    @Override
     protected void onResume(){
         super.onResume();
         controller.processEvent(TetrisController.InputEvent.RESUME);
     }
-
     // Initialize the button listener, also use lock object to synchronize the action of the game and the user
     private void setUpButtonListener() {
         ImageButton ibutton = (ImageButton) findViewById(R.id.button_left);
@@ -124,7 +145,9 @@ public class TetrisActivity extends AppCompatActivity {
     }
 
     public void game_over() {
-
+        TextView t = (TextView) findViewById(R.id.game_over);
+        String text = getApplicationContext().getResources().getString(R.string.game_over);
+        t.setText(text);
     }
 
 }

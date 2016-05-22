@@ -11,4 +11,6 @@
     <string name="score">Score: </string>
     <string name="next_figure">Next Figure: </string>
     <string name="zero"> 0 </string>
+    <string name="new_game">New Game</string>
+    <string name="game_over">Game Over</string>
 </resources>
