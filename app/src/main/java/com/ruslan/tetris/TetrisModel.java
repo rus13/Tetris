@@ -111,10 +111,18 @@ public class TetrisModel {
     * Methods for changing the position or the rotation shape of the figure
     * The changes are done only if its a feasible change, i.e. no overlapping with blocks
     * */
-    public void rotateFigure(){
+    public void rotate(){
+        rotateFigureRight();
+    }
+    public void rotateFigureLeft(){
         cur_fig.rotate();
         if(!feasiblePlacement())
             cur_fig.rotateBack();
+    }
+    public void rotateFigureRight(){
+        cur_fig.rotateBack();
+        if(!feasiblePlacement())
+            cur_fig.rotate();
     }
     public void moveFigureLeft(){
         if( cur_fig.getPosX() > 0){

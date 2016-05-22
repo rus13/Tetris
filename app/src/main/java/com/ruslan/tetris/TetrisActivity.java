@@ -75,12 +75,19 @@ public class TetrisActivity extends AppCompatActivity {
                 return true;
             }
         });
-        Button button = (Button) findViewById(R.id.button_rotate);
-        assert button != null;
-        button.setOnClickListener(new View.OnClickListener() {
+        ibutton = (ImageButton) findViewById(R.id.button_rotate_left);
+        assert ibutton != null;
+        ibutton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                    controller.processEvent(TetrisController.InputEvent.ROTATE);
+                    controller.processEvent(TetrisController.InputEvent.ROTATE_LEFT);
                 }
+        });
+        ibutton = (ImageButton) findViewById(R.id.button_rotate_right);
+        assert ibutton != null;
+        ibutton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                controller.processEvent(TetrisController.InputEvent.ROTATE_RIGHT);
+            }
         });
         final ImageButton pause_button = (ImageButton) findViewById(R.id.button_pause);
         assert pause_button != null;
@@ -98,6 +105,7 @@ public class TetrisActivity extends AppCompatActivity {
             }
         });
     }
+
 
     public void update(){
         Handler handler = new Handler();

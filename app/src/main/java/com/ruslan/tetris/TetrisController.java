@@ -28,9 +28,13 @@ public class TetrisController {
                     if(state == State.RUNNING)
                         model.moveFigureRight();
                     break;
-                case ROTATE:
+                case ROTATE_LEFT:
                     if(state == State.RUNNING)
-                        model.rotateFigure();
+                        model.rotateFigureLeft();
+                    break;
+                case ROTATE_RIGHT:
+                    if(state == State.RUNNING)
+                        model.rotateFigureRight();
                     break;
                 case DOWN_START:
                     current_speed = min_speed;
@@ -100,6 +104,6 @@ public class TetrisController {
         RUNNING, PAUSE, PLACE_FIGURE, GAME_OVER
     }
     enum InputEvent{
-        LEFT, RIGHT, DOWN_START, DOWN_END, ROTATE, PAUSE, RESUME
+        LEFT, RIGHT, DOWN_START, DOWN_END, ROTATE_LEFT, ROTATE_RIGHT, PAUSE, RESUME
     }
 }
