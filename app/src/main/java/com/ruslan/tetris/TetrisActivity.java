@@ -66,13 +66,13 @@ public class TetrisActivity extends AppCompatActivity {
         pause_button.setImageResource(R.drawable.resume);
         controller.processEvent(TetrisController.InputEvent.PAUSE);
     }
-    @Override
-    protected void onResume(){
-        super.onResume();
-        ImageButton pause_button = (ImageButton) findViewById(R.id.button_pause);
-        pause_button.setImageResource(R.drawable.pause);
-        controller.processEvent(TetrisController.InputEvent.RESUME);
-    }
+//    @Override
+//    protected void onResume(){
+//        super.onResume();
+//        ImageButton pause_button = (ImageButton) findViewById(R.id.button_pause);
+//        pause_button.setImageResource(R.drawable.pause);
+//        controller.processEvent(TetrisController.InputEvent.RESUME);
+//    }
     // Initialize the button listener
     private void setUpButtonListener() {
 //        ImageButton ibutton = (ImageButton) findViewById(R.id.button_left);
@@ -199,14 +199,14 @@ public class TetrisActivity extends AppCompatActivity {
         @Override
         public boolean onSingleTapUp(MotionEvent event) {
             if(event.getX() > getApplicationContext().getResources().getDisplayMetrics().widthPixels / 2)
-                controller.processEvent(TetrisController.InputEvent.ROTATE_RIGHT);
-            else
                 controller.processEvent(TetrisController.InputEvent.ROTATE_LEFT);
+            else
+                controller.processEvent(TetrisController.InputEvent.ROTATE_RIGHT);
             return true;
         }
         @Override
         public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-            if(velocityY > velocityX && Math.abs(event2.getY() - event1.getY()) > 2 * step_size && event2.getEventTime() - event1.getEventTime() < FLING_TIME_THRSH){
+            if(velocityY > velocityX && Math.abs(event2.getY() - event1.getY()) > 1.5 * step_size && event2.getEventTime() - event1.getEventTime() < FLING_TIME_THRSH){
                 controller.processEvent(TetrisController.InputEvent.DOWN_BOTTOM);
             }
             return true;

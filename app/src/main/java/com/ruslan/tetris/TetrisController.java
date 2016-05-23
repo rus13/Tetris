@@ -39,7 +39,8 @@ public class TetrisController {
                         model.moveFigureDown();
                     break;
                 case DOWN_BOTTOM:
-                    while(model.moveFigureDown());
+                    if(state == State.RUNNING)
+                        while(model.moveFigureDown());
                     break;
                 case PAUSE:
                     state = State.PAUSE;
