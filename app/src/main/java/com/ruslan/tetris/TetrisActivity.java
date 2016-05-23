@@ -19,9 +19,6 @@ public class TetrisActivity extends AppCompatActivity {
     GestureDetectorCompat mDetector;
     MyGestureListener gestureListener;
 
-    boolean pause;
-    int cell_size;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,7 +33,6 @@ public class TetrisActivity extends AppCompatActivity {
         g.setModel(model);
         NextFigureView nf = (NextFigureView) findViewById(R.id.next_figure);
         nf.setModel(model);
-        pause = false;
         gestureListener = new MyGestureListener();
         mDetector = new GestureDetectorCompat(this, gestureListener);
         //Create Button listener
@@ -66,13 +62,15 @@ public class TetrisActivity extends AppCompatActivity {
     @Override
     protected void onPause(){
         super.onPause();
-        pause = true;
+        ImageButton pause_button = (ImageButton) findViewById(R.id.button_pause);
+        pause_button.setImageResource(R.drawable.resume);
         controller.processEvent(TetrisController.InputEvent.PAUSE);
     }
     @Override
     protected void onResume(){
         super.onResume();
-        pause = false;
+        ImageButton pause_button = (ImageButton) findViewById(R.id.button_pause);
+        pause_button.setImageResource(R.drawable.pause);
         controller.processEvent(TetrisController.InputEvent.RESUME);
     }
     // Initialize the button listener
@@ -122,7 +120,7 @@ public class TetrisActivity extends AppCompatActivity {
         assert pause_button != null;
         pause_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if(pause){
+                if(controller.isPause()){
                     controller.processEvent(TetrisController.InputEvent.RESUME);
                     pause_button.setImageResource(R.drawable.pause);
                 }
@@ -130,7 +128,6 @@ public class TetrisActivity extends AppCompatActivity {
                     controller.processEvent(TetrisController.InputEvent.PAUSE);
                     pause_button.setImageResource(R.drawable.resume);
                 }
-                pause = !pause;
             }
         });
     }
@@ -186,7 +183,7 @@ public class TetrisActivity extends AppCompatActivity {
             }
             else{
                 distX += distanceX;
-                if(distX >= cell_size){
+                if(distX >= step_size){
                     controller.processEvent(TetrisController.InputEvent.LEFT);
                     distX -= step_size;
                 }
@@ -205,13 +202,13 @@ public class TetrisActivity extends AppCompatActivity {
                 controller.processEvent(TetrisController.InputEvent.ROTATE_LEFT);
             return true;
         }
-//        @Override
-//        public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-//            if(velocityY > 500){
-//                controller.processEvent(TetrisController.InputEvent.DOWN_BOTTOM);
-//            }
-//            return true;
-//        }
+        @Override
+        public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+            if(velocityY > 1000){
+                controller.processEvent(TetrisController.InputEvent.DOWN_BOTTOM);
+            }
+            return true;
+        }
         public void setStepSize(float cs){
             step_size = cs;
         }

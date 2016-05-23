@@ -86,7 +86,9 @@ public class TetrisController {
     private void game_over() {
         activity.game_over();
     }
-    // State and the lock object are needed make the game thread safe (feasible user and game actions)
+    public boolean isPause(){
+        return state == State.PAUSE;
+    }
     enum State {
         RUNNING, PAUSE, PLACE_FIGURE, GAME_OVER
     }
