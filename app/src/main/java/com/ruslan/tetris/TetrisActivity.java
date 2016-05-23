@@ -135,7 +135,7 @@ public class TetrisActivity extends AppCompatActivity {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         GridView g = (GridView) findViewById(R.id.tetris_view);
-        gestureListener.setStepSize(g.getCellSize() * 1.5F);
+        gestureListener.setStepSize(g.getCellSize() * 1.3F);
         mDetector.onTouchEvent(event);
         return super.onTouchEvent(event);
     }
@@ -163,6 +163,8 @@ public class TetrisActivity extends AppCompatActivity {
     }
 
     class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
+        final int FLING_TIME_THRSH = 300;
+
         float step_size;
         float distX;
         float distY;
@@ -204,7 +206,7 @@ public class TetrisActivity extends AppCompatActivity {
         }
         @Override
         public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-            if(velocityY > 1000){
+            if(velocityY > velocityX && Math.abs(event2.getY() - event1.getY()) > 2 * step_size && event2.getEventTime() - event1.getEventTime() < FLING_TIME_THRSH){
                 controller.processEvent(TetrisController.InputEvent.DOWN_BOTTOM);
             }
             return true;
