@@ -37,7 +37,7 @@ public class TetrisActivity extends AppCompatActivity {
         NextFigureView nf = (NextFigureView) findViewById(R.id.next_figure);
         nf.setModel(model);
         pause = false;
-        gestureListener = new MyGestureListener(controller);
+        gestureListener = new MyGestureListener();
         mDetector = new GestureDetectorCompat(this, gestureListener);
         //Create Button listener
         setUpButtonListener();
@@ -72,12 +72,10 @@ public class TetrisActivity extends AppCompatActivity {
     @Override
     protected void onResume(){
         super.onResume();
-        GridView g = (GridView) findViewById(R.id.tetris_view);
-        cell_size = g.getCellSize();
         pause = false;
         controller.processEvent(TetrisController.InputEvent.RESUME);
     }
-    // Initialize the button listener, also use lock object to synchronize the action of the game and the user
+    // Initialize the button listener
     private void setUpButtonListener() {
 //        ImageButton ibutton = (ImageButton) findViewById(R.id.button_left);
 //        assert ibutton != null;
@@ -168,15 +166,12 @@ public class TetrisActivity extends AppCompatActivity {
     }
 
     class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
-        TetrisController controller;
-
         float step_size;
         float distX;
         float distY;
 
-        MyGestureListener(TetrisController tc){
+        MyGestureListener(){
             super();
-            controller = tc;
             distX = 0;
             distY = 0;
         }
@@ -184,7 +179,6 @@ public class TetrisActivity extends AppCompatActivity {
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY){
             if(Math.abs(distanceY) > Math.abs(distanceX)){
                 distY += distanceY;
-
                 if(distY <= - step_size){
                     controller.processEvent(TetrisController.InputEvent.DOWN);
                     distY += step_size;
@@ -213,8 +207,8 @@ public class TetrisActivity extends AppCompatActivity {
         }
 //        @Override
 //        public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-//            if(velocityY > 10000){
-//                controller.processEvent(TetrisController.InputEvent.DOWN);
+//            if(velocityY > 500){
+//                controller.processEvent(TetrisController.InputEvent.DOWN_BOTTOM);
 //            }
 //            return true;
 //        }
