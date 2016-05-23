@@ -1,10 +1,9 @@
 package com.ruslan.tetris;
 
-import android.app.Activity;
 import android.os.Handler;
 
 public class TetrisController {
-    private final int min_speed = 70;
+    //private final int min_speed = 70;
     private final int default_speed = 700;
     State state;
 
@@ -36,12 +35,16 @@ public class TetrisController {
                     if(state == State.RUNNING)
                         model.rotateFigureRight();
                     break;
-                case DOWN_START:
-                    current_speed = min_speed;
+                case DOWN:
+                    if(state == State.RUNNING)
+                        model.moveFigureDown();
                     break;
-                case DOWN_END:
-                    current_speed = default_speed;
-                    break;
+//                case DOWN_START:
+//                    current_speed = min_speed;
+//                    break;
+//                case DOWN_END:
+//                    current_speed = default_speed;
+//                    break;
                 case PAUSE:
                     state = State.PAUSE;
                     break;
@@ -84,18 +87,6 @@ public class TetrisController {
         }, current_speed);
     }
 
-//    public void togglePause(){
-//        state = (state == State.PAUSE) ? State.RUNNING : State.PAUSE;
-//    }
-//
-//    public void pause(){
-//        state = State.PAUSE;
-//    }
-//
-//    public void resume(){
-//        state = State.RUNNING;
-//    }
-
     private void game_over() {
         activity.game_over();
     }
@@ -104,6 +95,6 @@ public class TetrisController {
         RUNNING, PAUSE, PLACE_FIGURE, GAME_OVER
     }
     enum InputEvent{
-        LEFT, RIGHT, DOWN_START, DOWN_END, ROTATE_LEFT, ROTATE_RIGHT, PAUSE, RESUME
+        LEFT, RIGHT, DOWN_START, DOWN_END, DOWN, ROTATE_LEFT, ROTATE_RIGHT, PAUSE, RESUME
     }
 }

@@ -12,9 +12,6 @@ import android.view.View;
  *
  */
 public class GridView extends View {
-    private int default_cell_size;
-    private int blank_color;
-
     private Paint fill_paint;
     private Paint stroke_paint;
 
@@ -45,21 +42,14 @@ public class GridView extends View {
         rows = cont.getResources().getInteger(R.integer.blocksY);
         columns = cont.getResources().getInteger(R.integer.blocksX);
         // Set up colors and default values
-        default_cell_size = cont.getResources().getInteger(R.integer.default_cell_size);
-        blank_color = cont.getResources().getInteger(R.integer.blank_color);
-        int stroke_color = cont.getResources().getInteger(R.integer.stroke_color);
-        int stroke_width = cont.getResources().getInteger(R.integer.stroke_width);
         // Set up a default fill Paint
         fill_paint = new Paint();
         fill_paint.setAntiAlias(true);
-        fill_paint.setColor(blank_color);
         fill_paint.setStyle(Paint.Style.FILL);
         // Set up a default stroke Paint
         stroke_paint = new Paint();
         stroke_paint.setAntiAlias(true);
-        stroke_paint.setColor(stroke_color);
         stroke_paint.setStyle(Paint.Style.STROKE);
-        stroke_paint.setStrokeWidth(stroke_width);
     }
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -69,6 +59,7 @@ public class GridView extends View {
         int heightMsMode = MeasureSpec.getMode(heightMeasureSpec);
         int heightMsSize = MeasureSpec.getSize(heightMeasureSpec);
         // Determine controller columns and rows: either default size or passed size
+        int default_cell_size = getContext().getResources().getInteger(R.integer.default_cell_size);
         int vw = (widthMsMode == MeasureSpec.UNSPECIFIED) ? columns * default_cell_size : widthMsSize;
         int vh = (heightMsMode == MeasureSpec.UNSPECIFIED) ? rows * default_cell_size : heightMsSize;
         // Determine cell columns and rows
@@ -77,19 +68,24 @@ public class GridView extends View {
         double size = Math.min(cw, ch);
         cell_size = (int) Math.floor(size);
         // Determine offset
-        offset_x = (vw - cell_size * columns) / 2;
-        offset_y = (vh - cell_size * rows) / 2;
+//        offset_x = (vw - cell_size * columns) / 2;
+//        offset_y = (vh - cell_size * rows) / 2;
         // Satisfy contract by calling setMeasuredDimension
-        setMeasuredDimension(2 * offset_x + columns * cell_size, 2 * offset_y + rows * cell_size);
+        setMeasuredDimension(columns * cell_size, rows * cell_size);
     }
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         // draw grid && figure
+        int blank_color = getContext().getResources().getInteger(R.integer.blank_color);
+        int stroke_color = getContext().getResources().getInteger(R.integer.stroke_color);
+        int stroke_width = getContext().getResources().getInteger(R.integer.stroke_width);
+        stroke_paint.setColor(stroke_color);
+        stroke_paint.setStrokeWidth(stroke_width);
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < columns; c++) {
-                int dx = c * cell_size + offset_x;
-                int dy = (rows - r - 1)* cell_size + offset_y;
+                int dx = c * cell_size;
+                int dy = (rows - r - 1)* cell_size;
                 Rect rect = new Rect(dx + 1, dy + 1, dx + cell_size - 2, dy + cell_size - 2);
                 if(model.isOccupiedAt(r,c))
                     fill_paint.setColor(model.colorAt(r,c));
@@ -99,6 +95,12 @@ public class GridView extends View {
                 canvas.drawRect(rect, stroke_paint);
             }
         }
+        //draw border
+        Rect rect = new Rect(1, 1, columns * cell_size - 2, rows * cell_size - 2);
+        int black_color =  getContext().getResources().getInteger(R.integer.black_color);
+        stroke_paint.setColor(black_color);
+        stroke_paint.setStrokeWidth(stroke_width * 3);
+        canvas.drawRect(rect, stroke_paint);
     }
     public void setModel(TetrisModel m){
         model = m;

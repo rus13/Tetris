@@ -1,14 +1,14 @@
 package com.ruslan.tetris;
-import android.media.Image;
 import android.os.Handler;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -16,7 +16,11 @@ public class TetrisActivity extends AppCompatActivity {
     TetrisController controller;
     TetrisModel model;
 
+    GestureDetectorCompat mDetector;
+    MyGestureListener gestureListener;
+
     boolean pause;
+    int cell_size;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +37,8 @@ public class TetrisActivity extends AppCompatActivity {
         NextFigureView nf = (NextFigureView) findViewById(R.id.next_figure);
         nf.setModel(model);
         pause = false;
+        gestureListener = new MyGestureListener(controller);
+        mDetector = new GestureDetectorCompat(this, gestureListener);
         //Create Button listener
         setUpButtonListener();
         controller.start();
@@ -60,56 +66,60 @@ public class TetrisActivity extends AppCompatActivity {
     @Override
     protected void onPause(){
         super.onPause();
+        pause = true;
         controller.processEvent(TetrisController.InputEvent.PAUSE);
     }
     @Override
     protected void onResume(){
         super.onResume();
+        GridView g = (GridView) findViewById(R.id.tetris_view);
+        cell_size = g.getCellSize();
+        pause = false;
         controller.processEvent(TetrisController.InputEvent.RESUME);
     }
     // Initialize the button listener, also use lock object to synchronize the action of the game and the user
     private void setUpButtonListener() {
-        ImageButton ibutton = (ImageButton) findViewById(R.id.button_left);
-        assert ibutton != null;
-        ibutton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                controller.processEvent(TetrisController.InputEvent.LEFT);
-            }
-        });
-        ibutton = (ImageButton) findViewById(R.id.button_right);
-        assert ibutton != null;
-        ibutton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                    controller.processEvent(TetrisController.InputEvent.RIGHT);
-            }
-        });
-        ibutton = (ImageButton) findViewById(R.id.button_down);
-        assert ibutton != null;
-        ibutton.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    controller.processEvent(TetrisController.InputEvent.DOWN_START);
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    controller.processEvent(TetrisController.InputEvent.DOWN_END);
-                }
-                return true;
-            }
-        });
-        ibutton = (ImageButton) findViewById(R.id.button_rotate_left);
-        assert ibutton != null;
-        ibutton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                    controller.processEvent(TetrisController.InputEvent.ROTATE_LEFT);
-                }
-        });
-        ibutton = (ImageButton) findViewById(R.id.button_rotate_right);
-        assert ibutton != null;
-        ibutton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                controller.processEvent(TetrisController.InputEvent.ROTATE_RIGHT);
-            }
-        });
+//        ImageButton ibutton = (ImageButton) findViewById(R.id.button_left);
+//        assert ibutton != null;
+//        ibutton.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                controller.processEvent(TetrisController.InputEvent.LEFT);
+//            }
+//        });
+//        ibutton = (ImageButton) findViewById(R.id.button_right);
+//        assert ibutton != null;
+//        ibutton.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                    controller.processEvent(TetrisController.InputEvent.RIGHT);
+//            }
+//        });
+//        ibutton = (ImageButton) findViewById(R.id.button_down);
+//        assert ibutton != null;
+//        ibutton.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//                    controller.processEvent(TetrisController.InputEvent.DOWN_START);
+//                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+//                    controller.processEvent(TetrisController.InputEvent.DOWN_END);
+//                }
+//                return true;
+//            }
+//        });
+//        ibutton = (ImageButton) findViewById(R.id.button_rotate_left);
+//        assert ibutton != null;
+//        ibutton.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                    controller.processEvent(TetrisController.InputEvent.ROTATE_LEFT);
+//                }
+//        });
+//        ibutton = (ImageButton) findViewById(R.id.button_rotate_right);
+//        assert ibutton != null;
+//        ibutton.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                controller.processEvent(TetrisController.InputEvent.ROTATE_RIGHT);
+//            }
+//        });
         final ImageButton pause_button = (ImageButton) findViewById(R.id.button_pause);
         assert pause_button != null;
         pause_button.setOnClickListener(new View.OnClickListener() {
@@ -127,6 +137,13 @@ public class TetrisActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        GridView g = (GridView) findViewById(R.id.tetris_view);
+        gestureListener.setStepSize(g.getCellSize() * 1.5F);
+        mDetector.onTouchEvent(event);
+        return super.onTouchEvent(event);
+    }
 
     public void update(){
         Handler handler = new Handler();
@@ -150,4 +167,59 @@ public class TetrisActivity extends AppCompatActivity {
         t.setText(text);
     }
 
+    class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
+        TetrisController controller;
+
+        float step_size;
+        float distX;
+        float distY;
+
+        MyGestureListener(TetrisController tc){
+            super();
+            controller = tc;
+            distX = 0;
+            distY = 0;
+        }
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY){
+            if(Math.abs(distanceY) > Math.abs(distanceX)){
+                distY += distanceY;
+
+                if(distY <= - step_size){
+                    controller.processEvent(TetrisController.InputEvent.DOWN);
+                    distY += step_size;
+                }
+            }
+            else{
+                distX += distanceX;
+                if(distX >= cell_size){
+                    controller.processEvent(TetrisController.InputEvent.LEFT);
+                    distX -= step_size;
+                }
+                if(distX <= - step_size){
+                    controller.processEvent(TetrisController.InputEvent.RIGHT);
+                    distX += step_size;
+                }
+            }
+            return true;
+        }
+        @Override
+        public boolean onSingleTapUp(MotionEvent event) {
+            if(event.getX() > getApplicationContext().getResources().getDisplayMetrics().widthPixels / 2)
+                controller.processEvent(TetrisController.InputEvent.ROTATE_RIGHT);
+            else
+                controller.processEvent(TetrisController.InputEvent.ROTATE_LEFT);
+            return true;
+        }
+//        @Override
+//        public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+//            if(velocityY > 10000){
+//                controller.processEvent(TetrisController.InputEvent.DOWN);
+//            }
+//            return true;
+//        }
+        public void setStepSize(float cs){
+            step_size = cs;
+        }
+    }
 }

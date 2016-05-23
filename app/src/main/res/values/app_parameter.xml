@@ -4,6 +4,7 @@
     <integer name="blocksY">20</integer>
     <integer name="default_cell_size">20</integer>
     <integer name="blank_color">0xFFCCCCCC</integer>
+    <integer name="black_color">0xFF000000</integer>
     <integer name="stroke_color">0xFFFFFFFF</integer>
     <integer name="stroke_width">3</integer>
 
