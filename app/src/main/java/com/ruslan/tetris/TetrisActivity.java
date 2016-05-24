@@ -61,15 +61,11 @@ public class TetrisActivity extends AppCompatActivity {
     @Override
     protected void onPause(){
         super.onPause();
-        ImageButton pause_button = (ImageButton) findViewById(R.id.button_pause);
-        pause_button.setImageResource(R.drawable.resume);
         controller.stop();
     }
     @Override
     protected void onResume(){
         super.onResume();
-        ImageButton pause_button = (ImageButton) findViewById(R.id.button_pause);
-        pause_button.setImageResource(R.drawable.pause);
         controller.resume();
     }
     // Initialize the button listener

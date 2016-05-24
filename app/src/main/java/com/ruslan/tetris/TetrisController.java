@@ -5,6 +5,9 @@ import android.os.Handler;
 public class TetrisController {
     private final int default_speed = 700;
     State state;
+    State backup_state;
+    int post_id;
+    GameEngine game;
 
     private int current_speed;
     TetrisModel model;
@@ -15,6 +18,9 @@ public class TetrisController {
         activity = a;
         current_speed = default_speed;
         state = State.RUNNING;
+        backup_state = state;
+        post_id = 0;
+        game = new GameEngine(post_id);
     }
 
     public void processEvent(InputEvent e){
@@ -57,45 +63,17 @@ public class TetrisController {
 
     public void start(){
         final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if(model.isGameOver()){
-                    state = State.GAME_OVER;
-                    game_over();
-                }
-                else{
-                    switch(state){
-                        case RUNNING:
-                            if (!model.moveFigureDown())
-                                state = State.PLACE_FIGURE;
-                            handler.postDelayed(this, current_speed);
-                            break;
-                        case PLACE_FIGURE:
-                            model.placeCurrentFigure();
-                            state = State.RUNNING;
-                            handler.postDelayed(this, current_speed);
-                            break;
-                        case PAUSE:
-                            handler.postDelayed(this, current_speed);
-                        case STOP:
-                            break;
-                        default:
-                            break;
-                    }
-                    activity.update();
-                }
-            }
-        }, current_speed);
+        handler.postDelayed(game, current_speed);
     }
 
     public void stop(){
+        backup_state = state;
         state = State.STOP;
     }
 
     public void resume(){
-        if(state == State.STOP)
-            state = State.RUNNING;
+        state = backup_state;
+        game = new GameEngine(++post_id);
         start();
     }
 
@@ -110,5 +88,43 @@ public class TetrisController {
     }
     enum InputEvent{
         LEFT, RIGHT, DOWN_BOTTOM, DOWN, ROTATE_LEFT, ROTATE_RIGHT, PAUSE, RESUME
+    }
+
+    class GameEngine implements Runnable {
+        final Handler handler;
+        int post_counter;
+        GameEngine(int pc){
+            handler = new Handler();
+            post_counter = pc;
+        }
+        @Override
+        public void run() {
+            if(post_counter < post_id)
+                return;
+            if (model.isGameOver())
+                state = State.GAME_OVER;
+            switch (state) {
+                case RUNNING:
+                    if (!model.moveFigureDown())
+                        state = State.PLACE_FIGURE;
+                    handler.postDelayed(this, current_speed);
+                    break;
+                case PLACE_FIGURE:
+                    model.placeCurrentFigure();
+                    state = State.RUNNING;
+                    handler.postDelayed(this, current_speed);
+                    break;
+                case PAUSE:
+                    handler.postDelayed(this, current_speed);
+                case STOP:
+                    break;
+                case GAME_OVER:
+                    game_over();
+                    break;
+                default:
+                    break;
+            }
+            activity.update();
+        }
     }
 }
