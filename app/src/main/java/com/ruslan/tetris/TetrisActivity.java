@@ -37,7 +37,6 @@ public class TetrisActivity extends AppCompatActivity {
         mDetector = new GestureDetectorCompat(this, gestureListener);
         //Create Button listener
         setUpButtonListener();
-        controller.start();
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -64,15 +63,15 @@ public class TetrisActivity extends AppCompatActivity {
         super.onPause();
         ImageButton pause_button = (ImageButton) findViewById(R.id.button_pause);
         pause_button.setImageResource(R.drawable.resume);
-        controller.processEvent(TetrisController.InputEvent.PAUSE);
+        controller.stop();
     }
-//    @Override
-//    protected void onResume(){
-//        super.onResume();
-//        ImageButton pause_button = (ImageButton) findViewById(R.id.button_pause);
-//        pause_button.setImageResource(R.drawable.pause);
-//        controller.processEvent(TetrisController.InputEvent.RESUME);
-//    }
+    @Override
+    protected void onResume(){
+        super.onResume();
+        ImageButton pause_button = (ImageButton) findViewById(R.id.button_pause);
+        pause_button.setImageResource(R.drawable.pause);
+        controller.resume();
+    }
     // Initialize the button listener
     private void setUpButtonListener() {
 //        ImageButton ibutton = (ImageButton) findViewById(R.id.button_left);

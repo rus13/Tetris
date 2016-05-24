@@ -14,6 +14,7 @@ public class TetrisController {
         model = m;
         activity = a;
         current_speed = default_speed;
+        state = State.RUNNING;
     }
 
     public void processEvent(InputEvent e){
@@ -55,12 +56,11 @@ public class TetrisController {
     }
 
     public void start(){
-        state = State.RUNNING;
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if(model.isGameOver()) {
+                if(model.isGameOver()){
                     state = State.GAME_OVER;
                     game_over();
                 }
@@ -69,19 +69,34 @@ public class TetrisController {
                         case RUNNING:
                             if (!model.moveFigureDown())
                                 state = State.PLACE_FIGURE;
+                            handler.postDelayed(this, current_speed);
                             break;
                         case PLACE_FIGURE:
                             model.placeCurrentFigure();
                             state = State.RUNNING;
+                            handler.postDelayed(this, current_speed);
+                            break;
+                        case PAUSE:
+                            handler.postDelayed(this, current_speed);
+                        case STOP:
                             break;
                         default:
                             break;
                     }
-                    handler.postDelayed(this, current_speed);
                     activity.update();
                 }
             }
         }, current_speed);
+    }
+
+    public void stop(){
+        state = State.STOP;
+    }
+
+    public void resume(){
+        if(state == State.STOP)
+            state = State.RUNNING;
+        start();
     }
 
     private void game_over() {
@@ -91,7 +106,7 @@ public class TetrisController {
         return state == State.PAUSE;
     }
     enum State {
-        RUNNING, PAUSE, PLACE_FIGURE, GAME_OVER
+        RUNNING, PAUSE, PLACE_FIGURE, GAME_OVER, STOP
     }
     enum InputEvent{
         LEFT, RIGHT, DOWN_BOTTOM, DOWN, ROTATE_LEFT, ROTATE_RIGHT, PAUSE, RESUME
